@@ -6,7 +6,7 @@
 //
 // Pass the token on params as below. Or remove it
 // from the params if you are not using authentication.
-import {Socket, LongPoll} from "phoenix"
+import {Socket, LongPoll} from "./phoenix"
 
 var transport;
 if (window.location.href.endsWith("longpoll")) {
@@ -64,13 +64,21 @@ socket.connect();
 // Now that you are connected, you can join channels with a topic:
 let channel = socket.channel("topic:subtopic", {});
 
-channel.on("test_event", () => console.log("b"));
+channel.on("test_event", () => {
+    console.log("d");
+    new Promise(resolve => resolve()).then(() => {
+        console.log("e");
+    });
+});
 
 channel.join()
     .receive("ok", resp => { 
         console.log("a"); 
-        new Promise(resolve => resolve()).then(() => console.log("c")); 
+        new Promise(resolve => resolve()).then(() => {
+            console.log("b");
+            new Promise(resolve => resolve()).then(() => {
+                console.log("c");
+            });
+        }); 
     })
     .receive("error", resp => { console.log("Unable to join", resp) });
-
-export default socket
